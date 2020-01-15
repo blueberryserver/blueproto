@@ -87,7 +87,7 @@ const _ = grpc.SupportPackageIsVersion4
 
 type GreeterClient interface {
 	// Sends a greeting
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	SayHello(ctx context.Context, opts ...grpc.CallOption) (Greeter_SayHelloClient, error)
 }
 
 type greeterClient struct {
@@ -98,54 +98,86 @@ func NewGreeterClient(cc *grpc.ClientConn) GreeterClient {
 	return &greeterClient{cc}
 }
 
-func (c *greeterClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := grpc.Invoke(ctx, "/msg.Greeter/SayHello", in, out, c.cc, opts...)
+func (c *greeterClient) SayHello(ctx context.Context, opts ...grpc.CallOption) (Greeter_SayHelloClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Greeter_serviceDesc.Streams[0], c.cc, "/msg.Greeter/SayHello", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &greeterSayHelloClient{stream}
+	return x, nil
+}
+
+type Greeter_SayHelloClient interface {
+	Send(*HelloRequest) error
+	Recv() (*HelloReply, error)
+	grpc.ClientStream
+}
+
+type greeterSayHelloClient struct {
+	grpc.ClientStream
+}
+
+func (x *greeterSayHelloClient) Send(m *HelloRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *greeterSayHelloClient) Recv() (*HelloReply, error) {
+	m := new(HelloReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Server API for Greeter service
 
 type GreeterServer interface {
 	// Sends a greeting
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	SayHello(Greeter_SayHelloServer) error
 }
 
 func RegisterGreeterServer(s *grpc.Server, srv GreeterServer) {
 	s.RegisterService(&_Greeter_serviceDesc, srv)
 }
 
-func _Greeter_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
-	if err := dec(in); err != nil {
+func _Greeter_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GreeterServer).SayHello(&greeterSayHelloServer{stream})
+}
+
+type Greeter_SayHelloServer interface {
+	Send(*HelloReply) error
+	Recv() (*HelloRequest, error)
+	grpc.ServerStream
+}
+
+type greeterSayHelloServer struct {
+	grpc.ServerStream
+}
+
+func (x *greeterSayHelloServer) Send(m *HelloReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *greeterSayHelloServer) Recv() (*HelloRequest, error) {
+	m := new(HelloRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(GreeterServer).SayHello(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/msg.Greeter/SayHello",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).SayHello(ctx, req.(*HelloRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 var _Greeter_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "msg.Greeter",
 	HandlerType: (*GreeterServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Greeter_SayHello_Handler,
+			StreamName:    "SayHello",
+			Handler:       _Greeter_SayHello_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "test3.proto",
 }
 
@@ -153,7 +185,7 @@ var _Greeter_serviceDesc = grpc.ServiceDesc{
 
 type NotifyClient interface {
 	// Notify
-	SayNotify(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	SayNotify(ctx context.Context, opts ...grpc.CallOption) (Notify_SayNotifyClient, error)
 }
 
 type notifyClient struct {
@@ -164,70 +196,102 @@ func NewNotifyClient(cc *grpc.ClientConn) NotifyClient {
 	return &notifyClient{cc}
 }
 
-func (c *notifyClient) SayNotify(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := grpc.Invoke(ctx, "/msg.Notify/SayNotify", in, out, c.cc, opts...)
+func (c *notifyClient) SayNotify(ctx context.Context, opts ...grpc.CallOption) (Notify_SayNotifyClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Notify_serviceDesc.Streams[0], c.cc, "/msg.Notify/SayNotify", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &notifySayNotifyClient{stream}
+	return x, nil
+}
+
+type Notify_SayNotifyClient interface {
+	Send(*HelloRequest) error
+	Recv() (*HelloReply, error)
+	grpc.ClientStream
+}
+
+type notifySayNotifyClient struct {
+	grpc.ClientStream
+}
+
+func (x *notifySayNotifyClient) Send(m *HelloRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *notifySayNotifyClient) Recv() (*HelloReply, error) {
+	m := new(HelloReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Server API for Notify service
 
 type NotifyServer interface {
 	// Notify
-	SayNotify(context.Context, *HelloRequest) (*HelloReply, error)
+	SayNotify(Notify_SayNotifyServer) error
 }
 
 func RegisterNotifyServer(s *grpc.Server, srv NotifyServer) {
 	s.RegisterService(&_Notify_serviceDesc, srv)
 }
 
-func _Notify_SayNotify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
-	if err := dec(in); err != nil {
+func _Notify_SayNotify_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(NotifyServer).SayNotify(&notifySayNotifyServer{stream})
+}
+
+type Notify_SayNotifyServer interface {
+	Send(*HelloReply) error
+	Recv() (*HelloRequest, error)
+	grpc.ServerStream
+}
+
+type notifySayNotifyServer struct {
+	grpc.ServerStream
+}
+
+func (x *notifySayNotifyServer) Send(m *HelloReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *notifySayNotifyServer) Recv() (*HelloRequest, error) {
+	m := new(HelloRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(NotifyServer).SayNotify(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/msg.Notify/SayNotify",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NotifyServer).SayNotify(ctx, req.(*HelloRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 var _Notify_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "msg.Notify",
 	HandlerType: (*NotifyServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "SayNotify",
-			Handler:    _Notify_SayNotify_Handler,
+			StreamName:    "SayNotify",
+			Handler:       _Notify_SayNotify_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "test3.proto",
 }
 
 func init() { proto.RegisterFile("test3.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 162 bytes of a gzipped FileDescriptorProto
+	// 166 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2e, 0x49, 0x2d, 0x2e,
 	0x31, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0xce, 0x2d, 0x4e, 0x57, 0x52, 0xe2, 0xe2,
 	0xf1, 0x48, 0xcd, 0xc9, 0xc9, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11, 0x12, 0xe2, 0x62,
 	0xc9, 0x4b, 0xcc, 0x4d, 0x95, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x02, 0xb3, 0x95, 0xd4, 0xb8,
 	0xb8, 0xa0, 0x6a, 0x0a, 0x72, 0x2a, 0x85, 0x24, 0xb8, 0xd8, 0x73, 0x53, 0x8b, 0x8b, 0x13, 0xd3,
-	0x61, 0x8a, 0x60, 0x5c, 0x23, 0x6b, 0x2e, 0x76, 0xf7, 0xa2, 0xd4, 0xd4, 0x92, 0xd4, 0x22, 0x21,
-	0x03, 0x2e, 0x8e, 0xe0, 0xc4, 0x4a, 0xb0, 0x2e, 0x21, 0x41, 0xbd, 0xdc, 0xe2, 0x74, 0x3d, 0x64,
-	0x5b, 0xa4, 0xf8, 0x91, 0x85, 0x0a, 0x72, 0x2a, 0x95, 0x18, 0x8c, 0xac, 0xb9, 0xd8, 0xfc, 0xf2,
-	0x4b, 0x32, 0xd3, 0x2a, 0x85, 0x0c, 0xb9, 0x38, 0x83, 0x13, 0x2b, 0xa1, 0x1c, 0xa2, 0x34, 0x27,
-	0xb1, 0x81, 0x7d, 0x64, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x9b, 0xb3, 0x06, 0xf1, 0xe0, 0x00,
-	0x00, 0x00,
+	0x61, 0x8a, 0x60, 0x5c, 0x23, 0x7b, 0x2e, 0x76, 0xf7, 0xa2, 0xd4, 0xd4, 0x92, 0xd4, 0x22, 0x21,
+	0x13, 0x2e, 0x8e, 0xe0, 0xc4, 0x4a, 0xb0, 0x2e, 0x21, 0x41, 0xbd, 0xdc, 0xe2, 0x74, 0x3d, 0x64,
+	0x5b, 0xa4, 0xf8, 0x91, 0x85, 0x0a, 0x72, 0x2a, 0x95, 0x18, 0x34, 0x18, 0x0d, 0x18, 0x8d, 0xec,
+	0xb9, 0xd8, 0xfc, 0xf2, 0x4b, 0x32, 0xd3, 0x2a, 0x85, 0x4c, 0xb9, 0x38, 0x83, 0x13, 0x2b, 0xa1,
+	0x1c, 0xa2, 0x0d, 0x48, 0x62, 0x03, 0xfb, 0xcc, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x8d, 0xc0,
+	0x2c, 0xf1, 0xe8, 0x00, 0x00, 0x00,
 }
